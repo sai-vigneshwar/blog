@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
 import { useAppContext } from '../../context/ContextApp'
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     
   const {axios,setToken} =useAppContext();
    const [email,setEmail]=useState('')
    const [password,setPassword]=useState('')
+const navigate=useNavigate();
 
     const handleSubmit= async(e)=>{
        e.preventDefault()
@@ -53,6 +55,12 @@ const Login = () => {
             <button type="submit" className='w-full py-3 font-medium bg-primary text-white rounded cursor-pointer hover:bg-primary/90 transition-all'>Login</button>
 
           </form>
+          <div className='mt-6 text-center'>
+            <p  onClick={()=>navigate('/register')} className='text-sm text-gray-500 hover:text-primary cursor-pointer'>
+              Not an user ? Sign in 
+             
+            </p>
+          </div>
         </div>
       </div>
     </div>

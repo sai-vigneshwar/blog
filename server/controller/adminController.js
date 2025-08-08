@@ -1,14 +1,19 @@
 import jwt  from "jsonwebtoken";
 import Blog from "../models/Blog.js";
 import Comment from "../models/comment.js";
+import { register } from "../models/register.js";
+import bcrypt from "bcrypt";
 
 export const adminLogin= async(req,res)=>{
    try{
   const {email,password}=req.body;
 
-  if(email !==process.env.ADMIN_USERNAME||password !==process.env.ADMIN_PASSWORD){
+  const user=await register.findOne({email});
+  if(!user){
     return res.json({success:false,message:"Invalid credentials"})
   }
+  const checkPassword=await bcrypt.compare(password,user.password);
+  if(!checkPassword) return res.json({success:false,message:"Invalid credentials"})
 
   const token=jwt.sign({email},process.env.JWT_SECRET);
   return res.json({success:true,token})
