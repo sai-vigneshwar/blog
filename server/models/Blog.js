@@ -11,6 +11,7 @@ const blogSchema =new mongoose.Schema({
     category:{type:String,required:true},
     image:{type:String,required:true},
     isPublished:{type:Boolean,required:true},
+    username:{type:String,required:true}
 },{timestamps:true});
 
 const Blog=mongoose.model('blog',blogSchema);

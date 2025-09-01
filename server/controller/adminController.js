@@ -16,7 +16,7 @@ export const adminLogin= async(req,res)=>{
   if(!checkPassword) return res.json({success:false,message:"Invalid credentials"})
 
   const token=jwt.sign({email},process.env.JWT_SECRET);
-  return res.json({success:true,token})
+  return res.json({success:true,token,username:user.username})
    }
    catch(error){
        return res.json({success:"false",message:error.message})
@@ -27,7 +27,7 @@ export const adminLogin= async(req,res)=>{
 ///getALL blogs for admin
 export const getAllBlogsAdmin=async (req,res)=>{
   try {
-    const blogs=await Blog.find({}).sort({createdAt:-1});
+    const blogs=await Blog.find({username:req.body.username}).sort({createdAt:-1});
     res.json({success:"true",blogs})
   } catch (error) {
      return res.json({success:"false",message:error.message})
@@ -37,7 +37,9 @@ export const getAllBlogsAdmin=async (req,res)=>{
 //getall comments for admin
 export const getAllComments=async (req,res)=>{
   try {
-    const comments=await Comment.find({}).populate("blog").sort({createdAt:-1});
+    const nonfilteredComments=await Comment.find({}).populate("blog").sort({createdAt:-1});
+  
+    const comments=nonfilteredComments.filter((obj)=>obj.blog.username===req.body.username);
     res.json({success:"true",comments})
   } catch (error) {
      return res.json({success:"false",message:error.message})
@@ -48,10 +50,13 @@ export const getAllComments=async (req,res)=>{
 
 export const getDashboard=async (req,res)=>{
   try {
-   const recentBlogs=await Blog.find({}).sort({createdAt:-1}).limit(5);
-   const blogs=await Blog.countDocuments();
-    const comments=await Comment.countDocuments();
-     const drafts=await Blog.countDocuments({isPublished:false});
+    const username=req.body.username;
+   const recentBlogs=await Blog.find({username}).sort({createdAt:-1}).limit(5);
+   const blogs=await Blog.countDocuments({username});
+   const getcomments=await Comment.find({}).populate("blog");
+   const arr=getcomments.filter((obj)=>obj.blog.username===username);
+    const comments=arr.length;
+     const drafts=await Blog.countDocuments({username,isPublished:false});
 
      const dashboardData={
       blogs,comments,drafts,recentBlogs

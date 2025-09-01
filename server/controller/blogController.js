@@ -6,11 +6,13 @@ import imagekit from '../config/imageKit.js';
 import Blog from '../models/Blog.js';
 import Comment from '../models/comment.js';
 import main from '../config/Gemini.js';
+import { sendMail } from './sendingMail.js';
+import { register } from '../models/register.js';
 
 
 export const addBlog=async (req,res)=>{
   try{
-    const {title,subTitle,description,category,isPublished}=JSON.parse(req.body.blog);
+    const {title,subTitle,description,category,isPublished,username}=JSON.parse(req.body.blog);
 
     const imageFile=req.file;
    
@@ -42,8 +44,17 @@ export const addBlog=async (req,res)=>{
 
     const image=optimizedImageUrl;
 
-    await Blog.create({title,subTitle,description,category,image,isPublished})
+    await Blog.create({title,subTitle,description,category,image,isPublished,username})
 
+    const otherUser=await register.find({username:{$ne:username}});
+    for(let user of otherUser){
+      const emailId=user.email;
+      try {
+    await sendMail(emailId, "New Blog", `New blog is released from ${username}`);
+  } catch (err) {
+    console.error(`Failed to send email to ${emailId}:`, err.message);
+  }
+    }
     res.json({success:true,message:"Blog added successfully"});
     
 }catch(error){
