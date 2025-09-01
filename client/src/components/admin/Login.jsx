@@ -20,6 +20,7 @@ const navigate=useNavigate();
          // console.log("dsd")
           setToken(data.token)
           localStorage.setItem('token',data.token);
+          localStorage.setItem('username',data.username);
           axios.defaults.headers.common['Authorization']=data.token
              console.log("dsd")
          }

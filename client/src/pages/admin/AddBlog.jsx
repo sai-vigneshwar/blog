@@ -50,8 +50,8 @@ const onSubmitHandler =async(e)=>{
   try{
   e.preventDefault();
   setIsAdding(true)
-
-  const blog={ title,subTitle,description:quillRef.current.root.innerHTML,category,isPublished}
+  
+  const blog={ title,subTitle,description:quillRef.current.root.innerHTML,category,isPublished,username:localStorage.getItem("username")}
    
   const formData=new FormData();
   formData.append('blog',JSON.stringify(blog))

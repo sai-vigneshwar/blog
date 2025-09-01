@@ -12,7 +12,9 @@ const Comments = () => {
 
   const fetchComments = async () => {
    try {
-    const {data} =await axios.get('/api/admin/comments')
+  
+    const {data} =await axios.post('/api/admin/comments',{username:localStorage.getItem("username")});
+  
     data.success ?setComments(data.comments):toast.error(data.message)
    } catch (error) {
      toast.error(error.message)

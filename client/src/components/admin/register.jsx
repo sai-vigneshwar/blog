@@ -26,12 +26,13 @@ const [password, setPassword] = useState('');
 
     try {
       const {data} = await axios.post('/api/admin/register', {
-       name,password,email
+       username:name,password,email
       })
 
       if (data.success) {
         setToken(data.token);
          localStorage.setItem('token',data.token);
+          localStorage.setItem('username',data.username);
           axios.defaults.headers.common['Authorization']=data.token
         toast.success("Registration successful! Please login.")
         navigate('/admin')
