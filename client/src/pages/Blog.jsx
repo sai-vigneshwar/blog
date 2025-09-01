@@ -18,11 +18,8 @@ const Blog = () => {
   const [comments, setComments] = useState([])
  const [name, setName] = useState('')
   const [content, setContent] = useState('')
-
-  ////subscirbe
-  const [subscribeuser,setsubscribeuser]=useState('')
-
-  ////subscribe
+const [subscribed, setSubscribed] = useState(false)
+ 
   
 
 
@@ -37,6 +34,36 @@ const Blog = () => {
    }
   }
 
+//subscribe function
+const subscribe=async()=>{
+try{
+ const {data}=await axios.post(`/api/blog/subscribe`,{username:localStorage.getItem('username'),blogId:id})
+   console.log(data);
+ if(data.success){ 
+  toast.success(data.message)
+  setSubscribed(true)
+  }
+ else{toast.error(data.message)}
+}catch(error){
+  toast.error(error.message);
+}
+}
+
+//end of subscribe function
+
+//fetch already subscribe function
+const fetchAlreadySubscribe=async()=>{
+  try{  
+    const {data}=await axios.post(`/api/blog/alreadysubscribe`,{username:localStorage.getItem('username'),blogId:id})
+
+    
+    data.success ? setSubscribed(true):null
+   }catch(error){
+     toast.error(error.message);
+   }      
+  }
+
+  //end of fetch already subscribe function
   const fetchComments =async ()=>{
    try{
    const {data}=await axios.post(`/api/blog/comment`,{blogId:id})
@@ -78,6 +105,7 @@ const Blog = () => {
   useEffect(() => {
     fetchBlogData()
     fetchComments()
+    fetchAlreadySubscribe()
   }, [])
 
   return data ? (
@@ -99,7 +127,15 @@ const Blog = () => {
 
          {/* Comments section */}
          <div className='mt-14 mb-10 max-w-3xl mx-auto'>
-           <button className=' text-sm text-primary font-medium border-black border-2 p-2 rounded-2xl bg-blue-300 z-100  cursor-pointer'>subscribe</button>
+          <button
+  disabled={subscribed}
+  onClick={subscribe}
+  className={`text-sm text-primary font-medium border-black border-2 p-2 rounded-2xl bg-blue-300 z-100 ${
+    subscribed ? "cursor-not-allowed" : "cursor-pointer"
+  }`}
+>
+  {subscribed ? "Following" : "Follow"}
+</button>
           <p className='font-semibold mb-4'> Comments ({comments.length})</p>
           <div className='flex flex-col gap-4'>
             {comments.map((item,index)=>{
@@ -124,7 +160,7 @@ const Blog = () => {
      <input onChange ={(e)=> setName(e.target.value)} value={name} type='text' placeholder='Name' required className='w-full p-2 border border-gray-300 rounded outline-none'/>
     <textarea onChange ={(e)=> setContent(e.target.value)} value={content} placeholdeer='comment' className='w-full p-2 border border-gray-300 rounded outline-none h-48' required></textarea>
    
-   <button type="submit" className='bg-primary text-white rounded p-2 px-8 hover:scale-102 transition-all cursor-pointer'>Submit</button>
+   <button    type="submit" className='bg-primary text-white rounded p-2 px-8 hover:scale-102 transition-all cursor-pointer'>Submit</button>
     </form>
 
 
