@@ -8,6 +8,7 @@ import Comment from '../models/comment.js';
 import main from '../config/Gemini.js';
 import { sendMail } from './sendingMail.js';
 import { register } from '../models/register.js';
+import {subscribe} from '../models/subscribe.js';
 
 
 export const addBlog=async (req,res)=>{
@@ -46,9 +47,10 @@ export const addBlog=async (req,res)=>{
 
     await Blog.create({title,subTitle,description,category,image,isPublished,username})
 
-    const otherUser=await register.find({username:{$ne:username}});
+    const otherUser=await subscribe.find({blogowner:username});
     for(let user of otherUser){
-      const emailId=user.email;
+      const email=await register.find({username:user.username});
+      const emailId=email[0].email;
       try {
     await sendMail(emailId, "New Blog", `New blog is released from ${username}`);
   } catch (err) {
@@ -85,6 +87,7 @@ export const getBlogById =async(req,res)=>{
   if(!blog){
     return res.json({success:false,message:"Blog not found"})
   }
+  console.log(blogId);
   res.json({success:true,blog})
     }
    catch(error){
@@ -168,3 +171,45 @@ export const getBlogComments=async(req,res)=>{
   }
 
  }
+
+//subscribe function
+ export const subscribefunction =async(req,res)=>{
+
+  try{
+   const {username,blogId} =req.body ;
+    const blog=await Blog.findById(blogId); 
+    if(!blog){ 
+      return res.json({success:false,message:"Blog not found"})
+    } 
+    const blogowner=blog.username;
+    await subscribe.create({username,blogowner}); 
+  res.json({success:true,message:"Subscribed successfully"});
+   
+  }catch(error){
+    res.json({success:false ,message:"Sunscribed failed"});   
+  }
+  }
+
+  //subscribe function
+
+
+
+  export const alreadysubscribefunction =async(req,res)=>{
+
+  try{
+   const {username,blogId} =req.body ;
+    const blog=await Blog.findById(blogId); 
+    if(!blog){ 
+      return res.json({success:false,message:"Blog not found"})
+    } 
+    const blogowner=blog.username;
+    const already=await subscribe.findOne({username,blogowner});
+    if(already){
+      return res.json({success:true,message:"You are already subscribed"})
+    }
+    res.json({success:false,message:"Not subscribed"});
+   
+  }catch(error){
+    res.json({success:false ,message:"Sunscribed failed"});   
+  }
+  }

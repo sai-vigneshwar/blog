@@ -4,9 +4,10 @@
 
 
 import express from "express"
-import { addBlog, addComment, deleteBlogById, generateContent, getAllBlogs, getBlogById, getBlogComments, togglePublish } from "../controller/blogController.js"
+import { addBlog, addComment, deleteBlogById, generateContent, getAllBlogs, getBlogById, getBlogComments, togglePublish , subscribefunction,alreadysubscribefunction} from "../controller/blogController.js"
 import upload from "../middleware/multer.js"
 import { auth } from "../middleware/auth.js"
+
 
 const blogRouter=express.Router()
 
@@ -18,5 +19,7 @@ blogRouter.post('/toggle-publish',auth,togglePublish)
 blogRouter.post('/add-comment',addComment)
 blogRouter.post('/comment',getBlogComments)
 blogRouter.post('/generate',auth,generateContent)
+blogRouter.post('/subscribe',subscribefunction)
+blogRouter.post('/alreadysubscribe',alreadysubscribefunction)
 
 export default blogRouter;
