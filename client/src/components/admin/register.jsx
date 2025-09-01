@@ -8,6 +8,8 @@ const Register = () => {
   const [name, setName] = useState('');
 const [email, setEmail] = useState('');
 const [password, setPassword] = useState('');
+const [otp, setOtp] = useState('');
+const [showOtpInput, setShowOtpInput] = useState(false);
 
   const [loading, setLoading] = useState(false)
 
@@ -30,12 +32,8 @@ const [password, setPassword] = useState('');
       })
 
       if (data.success) {
-        setToken(data.token);
-         localStorage.setItem('token',data.token);
-          localStorage.setItem('username',data.username);
-          axios.defaults.headers.common['Authorization']=data.token
-        toast.success("Registration successful! Please login.")
-        navigate('/admin')
+        toast.success(data.message)
+        setShowOtpInput(true);
       } else {
         toast.error(data.message || "Registration failed")
       }
@@ -46,6 +44,28 @@ const [password, setPassword] = useState('');
     }
   }
 
+  const handleOtpVerification = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await axios.post('/api/admin/verify-otp', { email, otp });
+      if (data.success) {
+        setToken(data.token);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('username', data.username);
+        axios.defaults.headers.common['Authorization'] = data.token;
+        toast.success("Account created successfully!");
+        navigate('/admin');
+      } else {
+        toast.error(data.message || "OTP verification failed");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "OTP verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className='flex items-center justify-center h-screen'>
       <div className='w-full max-w-sm p-6 max-md:m-6 border border-primary/30 shadow-xl shadow-primary/15 rounded-lg'>
@@ -54,52 +74,76 @@ const [password, setPassword] = useState('');
             <h1 className='text-3xl font-bold'> <span className='text-primary'> Admin</span> Register</h1>
             <p className='font-light'>Create your admin account</p>
           </div>
-          <form onSubmit={handleSubmit} className='mt-6 w-full sm:max-w-md text-gray-600'>
-            <div>
-              <label>Full Name</label>
-              <input 
-                onChange={(e)=>setName(e.target.value)} 
-                value={name} 
-                name="name"
-                type="text" 
-                required 
-                placeholder="Enter your full name" 
-                className='border-b-2 border-gray-300 p-2 outline-none mb-6 w-full'
-              />
-            </div>
-            <div>
-              <label>Email</label>
-              <input 
-                onChange={(e)=>setEmail(e.target.value)} 
-                value={email} 
-                name="email"
-                type="email" 
-                required 
-                placeholder="Enter your email" 
-                className='border-b-2 border-gray-300 p-2 outline-none mb-6 w-full'
-              />
-            </div>
-            <div>
-              <label>Password</label>
-              <input 
-                onChange={(e)=>setPassword(e.target.value)} 
-                value={password} 
-                name="password"
-                type="password" 
-                required 
-                placeholder="Enter your password" 
-                className='border-b-2 border-gray-300 p-2 outline-none mb-6 w-full'
-              />
-            </div>
-           
-            <button 
-              type="submit" 
-              disabled={loading}
-              className='w-full py-3 font-medium bg-primary text-white rounded cursor-pointer hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
-            >
-              {loading ? 'Creating Account...' : 'Register'}
-            </button>
-          </form>
+          {!showOtpInput ? (
+            <form onSubmit={handleSubmit} className='mt-6 w-full sm:max-w-md text-gray-600'>
+              <div>
+                <label>Full Name</label>
+                <input 
+                  onChange={(e)=>setName(e.target.value)} 
+                  value={name} 
+                  name="name"
+                  type="text" 
+                  required 
+                  placeholder="Enter your full name" 
+                  className='border-b-2 border-gray-300 p-2 outline-none mb-6 w-full'
+                />
+              </div>
+              <div>
+                <label>Email</label>
+                <input 
+                  onChange={(e)=>setEmail(e.target.value)} 
+                  value={email} 
+                  name="email"
+                  type="email" 
+                  required 
+                  placeholder="Enter your email" 
+                  className='border-b-2 border-gray-300 p-2 outline-none mb-6 w-full'
+                />
+              </div>
+              <div>
+                <label>Password</label>
+                <input 
+                  onChange={(e)=>setPassword(e.target.value)} 
+                  value={password} 
+                  name="password"
+                  type="password" 
+                  required 
+                  placeholder="Enter your password" 
+                  className='border-b-2 border-gray-300 p-2 outline-none mb-6 w-full'
+                />
+              </div>
+             
+              <button 
+                type="submit" 
+                disabled={loading}
+                className='w-full py-3 font-medium bg-primary text-white rounded cursor-pointer hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                {loading ? 'Sending OTP...' : 'Register'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleOtpVerification} className='mt-6 w-full sm:max-w-md text-gray-600'>
+              <div>
+                <label>OTP</label>
+                <input 
+                  onChange={(e) => setOtp(e.target.value)} 
+                  value={otp} 
+                  name="otp"
+                  type="text" 
+                  required 
+                  placeholder="Enter OTP sent to your email" 
+                  className='border-b-2 border-gray-300 p-2 outline-none mb-6 w-full'
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className='w-full py-3 font-medium bg-primary text-white rounded cursor-pointer hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                {loading ? 'Verifying OTP...' : 'Verify OTP'}
+              </button>
+            </form>
+          )}
           <div className='mt-6 text-center'>
             <p className='text-sm text-gray-500'>
               Already have an account?{' '}
